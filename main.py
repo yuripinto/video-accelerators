@@ -10,29 +10,39 @@ class Slice:
     self.initial_video = None
     self.ending_video = None
 
+  def cut(self):
+      ffmpeg_extract_subclip(self.original_video , self.start_time, self.end_time, targetname=self.slice_video_name)
+
   def export(self):
     if self.initial_video is None and self.ending_video is None:
-      # apenas corte
-      ffmpeg_extract_subclip(self.original_video , self.start_time, self.end_time, targetname=self.slice_video_name)
+      self.cut()
     else:
       clip_list = []
+      min_height = 99999
+      min_width = 99999
       #video inicial
       if self.initial_video is not None:
         clip_initial_video = VideoFileClip(self.initial_video).set_fps(60)
         clip_list.append(clip_initial_video)
+        min_width = clip_initial_video.size[0] if clip_initial_video.size[0] < min_width else min_width
+        min_height = clip_initial_video.size[1] if clip_initial_video.size[1] < min_height else min_height
       #video cortado
       clip_sliced_video = VideoFileClip(self.original_video).subclip(self.start_time, self.end_time).set_fps(60)
       clip_list.append(clip_sliced_video)
-      print(clip_sliced_video.size)
+      min_width = clip_sliced_video.size[0] if clip_sliced_video.size[0] < min_width else min_width
+      min_height = clip_sliced_video.size[1] if clip_sliced_video.size[1] < min_height else min_height
       #video final
       if self.ending_video is not None:
         clip_ending_video = VideoFileClip(self.ending_video).set_fps(60)
         clip_list.append(clip_ending_video)
-      #redimensionando videos
-      #TODO https://zulko.github.io/moviepy/ref/videofx/moviepy.video.fx.all.resize.html?highlight=resize#moviepy.video.fx.all.resize
+        min_width = clip_ending_video.size[0] if clip_ending_video.size[0] < min_width else min_width
+        min_height = clip_ending_video.size[1] if clip_ending_video.size[1] < min_height else min_height
+      #redimensionando videos para tamanho do menor video
+      for i in range(0,len(clip_list)): 
+        clip_list[i] = clip_list[i].resize(height=min_height, width=min_width)
       #gerando video
       final_clip = concatenate_videoclips(clip_list, method='compose')
-      final_clip.write_videofile(self.slice_video_name)
+      final_clip.write_videofile(self.slice_video_name, logger='bar')
 
 def cut():
   original_video = input('Nome do arquivo a ser cortado: ')
@@ -61,15 +71,13 @@ def cut():
     slice_list.append(current_slice)
 
   print("==========================================")
-  print("Iniciando processamento")
-  print("==========================================")
+  print("Processando...")
 
   for slice in slice_list:
-    print("Processando corte #" + str(slice.id) + " - " + slice.slice_video_name + "...", end = '')
     slice.export()
-
-  print("Finalizado!")
-  system("pause")
+    print("Gerado corte #" + str(slice.id) + " - " + slice.slice_video_name)
 
 if __name__ == '__main__':
   cut()
+  print("Finalizado!")
+  input("Pressione Enter para finalizar")
