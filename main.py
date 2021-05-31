@@ -45,6 +45,8 @@ class Slice:
       final_clip.write_videofile(self.slice_video_name, logger='bar')
 
 def cut():
+  initial_video = ""
+  ending_video = ""
   original_video = input('Nome do arquivo a ser cortado: ')
   slices_count = int(input('Quantidade de partes a serem cortadas: '))
   initial_video = input('Nome do video de a ser concatenado no inicio (pressione Enter caso vazio): ')
@@ -63,10 +65,10 @@ def cut():
     current_slice.end_time = int(end_time)
     current_slice.slice_video_name = slice_video_name
     #video inicial
-    if initial_video is not None:
+    if len(initial_video) > 0:
       current_slice.initial_video = initial_video
     #video final
-    if ending_video is not None:
+    if len(ending_video) > 0:
       current_slice.ending_video = ending_video
     slice_list.append(current_slice)
 
