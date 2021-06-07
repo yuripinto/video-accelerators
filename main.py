@@ -42,7 +42,7 @@ class Slice:
         clip_list[i] = clip_list[i].resize(height=min_height, width=min_width)
       #gerando video
       final_clip = concatenate_videoclips(clip_list, method='compose')
-      final_clip.write_videofile(self.slice_video_name, logger='bar')
+      final_clip.write_videofile(self.slice_video_name, logger='bar', temp_audiofile='temp-audio.m4a', remove_temp=True, codec="libx264", audio_codec="aac")
 
 def cut():
   initial_video = ""
